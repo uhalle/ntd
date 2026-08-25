@@ -3,6 +3,9 @@ package com.notodolist;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
@@ -17,6 +20,8 @@ public class LoginController {
 
     @PostMapping("/signup")
     public String signup(@RequestBody SignupRequest signUpuser) {
+    	System.out.println("reacjed signup");
+    	System.out.println(signUpuser.getEmail());
         return userService.registerUser(signUpuser);
     }
 
@@ -25,10 +30,12 @@ public class LoginController {
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         // Find user by username
         User user = userRepository.findByUsername(loginRequest.getUsername());
+        
     
         if (user == null) {
             return ResponseEntity.status(401).body("User not found1");
         }
+        System.out.println("user is " + user.getUsername());
 
         // Check password (in real apps, use hashed passwords!)
         if (!user.getPassword().equals(loginRequest.getPassword())) {   

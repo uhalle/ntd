@@ -1,6 +1,9 @@
 package com.notodolist;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.transaction.Transactional;
 
 import java.util.List;
 
@@ -10,9 +13,13 @@ import java.util.List;
 public class TaskController {
 
     private final TaskRepository repository;
+    
+    private final GroupRepository gRepository;
 
-    public TaskController(TaskRepository repository) {
+    @Autowired
+    public TaskController(TaskRepository repository, GroupRepository gRepository) {
         this.repository = repository;
+        this.gRepository = gRepository;
     }
 
     @GetMapping
@@ -21,7 +28,13 @@ public class TaskController {
     }
 
     @PostMapping
+    @Transactional
     public Task createTask(@RequestBody Task task) {
+    	Group group = new Group();
+    	group.setName(task.getGroup().getName());
+    	group.setUser(task.getUser());
+    	gRepository.save(group);
+    	task.setGroup(group);
         return repository.save(task);
     }
 
@@ -43,8 +56,24 @@ public class TaskController {
     
     @GetMapping("/byUserAndGroup/{userId}/{groupId}")
     public List<Task> getTasksByUserAndGroup(
-            @RequestParam Long userId,
-            @RequestParam Long groupId) {
+    		@PathVariable Long userId,
+    		@PathVariable Long groupId) {
         return repository.findByUserIdAndGroupId(userId, groupId);
     }
+    
+    @GetMapping("/{userId}")
+    public List<Task> getTasksByUser(
+            @PathVariable Long userId) {
+
+    	System.out.println("trying to get tasks");
+    	List<Task> tasks = repository.findByUserId(userId);
+        return tasks;
+    }
+    
+    @GetMapping("/groups/{userId}")
+    public List<Group> getGroupsByUser(
+            @PathVariable Long userId) {
+        return gRepository.findGroupsByUserId(userId);
+    }
+    
 }
