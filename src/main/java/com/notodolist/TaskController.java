@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.transaction.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
@@ -62,15 +63,26 @@ public class TaskController {
     }
     
     @GetMapping("/{userId}")
-    public List<Task> getTasksByUser(
+    public List<TaskDTO> getTasksByUser(
             @PathVariable Long userId) {
 
     	System.out.println("trying to get tasks");
     	List<Task> tasks = repository.findByUserId(userId);
-        return tasks;
+    	List<TaskDTO> tasksDTO = tasks.stream().map((task)->mapTaskToTaskDTO(task)).toList();
+        return tasksDTO;
     }
     
-    @GetMapping("/groups/{userId}")
+    private TaskDTO mapTaskToTaskDTO(Task task) {
+		TaskDTO taskDTO = new TaskDTO();
+		taskDTO.setId(task.getId());
+		taskDTO.setGroup(task.getGroup());
+		taskDTO.setUser(task.getUser());
+		taskDTO.setPriority(task.getPriority());
+		taskDTO.setDescription(task.getDescription());
+		return taskDTO;
+	}
+
+	@GetMapping("/groups/{userId}")
     public List<Group> getGroupsByUser(
             @PathVariable Long userId) {
         return gRepository.findGroupsByUserId(userId);
